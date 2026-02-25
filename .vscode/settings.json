@@ -1,34 +1,16 @@
 {
-    "files.exclude": {
-        "**/.git": true,
-        "**/.DS_Store": true,
-        "**/*.olean": true,
-        "**/.DS_yml": true,
-        "**/.gitpod.yml": true,
-        "**/.vscode": true,
-        ".devcontainer.json": true,
-        ".docker": true,
-        "build": true,
-        "html": true,
-        "lake-packages": true,
-        ".gitignore": true,
-        "lake-manifest.json": true,
-        "lakefile.lean": true,
-        "lean-toolchain": true,
-        "mathematics_in_lean.pdf": true,
-        "MIL.lean": true,
-        "README.md":true,
-	".lake": true,
-	".devcontainer": true,
-	".github": true
-    },
+    "files.exclude": {},
     "editor.minimap.enabled": false,
     "editor.acceptSuggestionOnEnter": "off",
     "editor.quickSuggestions.comments": true,
     "scm.diffDecorationsGutterVisibility": "hover",
     "editor.semanticHighlighting.enabled": true,
     "editor.semanticTokenColorCustomizations": {
-        "[Default Light+]": {"rules": {"variable": "#1a31da"}}
+        "[Default Light+]": {
+            "rules": {
+                "variable": "#1a31da"
+            }
+        }
     },
     "editor.unicodeHighlight.nonBasicASCII": false,
     "editor.unicodeHighlight.ambiguousCharacters": false,
