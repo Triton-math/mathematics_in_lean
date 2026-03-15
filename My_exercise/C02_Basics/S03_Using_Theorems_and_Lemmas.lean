@@ -44,13 +44,15 @@ example (x : ℝ) : x ≤ x :=
 
 -- Try this.
 example (h₀ : a ≤ b) (h₁ : b < c) (h₂ : c ≤ d) (h₃ : d < e) : a < e := by
-  sorry
+  have h₄ : c < e := lt_of_le_of_lt h₂ h₃
+  have h₅ : b < e := lt_trans h₁ h₄
+  exact lt_of_le_of_lt h₀ h₅
 
 example (h₀ : a ≤ b) (h₁ : b < c) (h₂ : c ≤ d) (h₃ : d < e) : a < e := by
   linarith
 
 section
-
+-- 这个证明目前还是个黑盒？因为我们还不知道要怎么证明 4 * a < 7 * a，这需要对 4 < 7 两边做乘法。
 example (h : 2 * a ≤ 3 * b) (h' : 1 ≤ a) (h'' : d = 2) : d + a ≤ 5 * b := by
   linarith
 
@@ -86,21 +88,31 @@ example (h₀ : a ≤ b) (h₁ : c < d) : a + exp c + e < b + exp d + e := by
     apply exp_lt_exp.mpr h₁
   apply le_refl
 
-example (h₀ : d ≤ e) : c + exp (a + d) ≤ c + exp (a + e) := by sorry
+example (h₀ : d ≤ e) : c + exp (a + d) ≤ c + exp (a + e) := by
+  apply add_le_add_left
+  rw[exp_le_exp]
+  apply add_le_add_left
+  exact h₀
 
 example : (0 : ℝ) < 1 := by norm_num
 
 example (h : a ≤ b) : log (1 + exp a) ≤ log (1 + exp b) := by
-  have h₀ : 0 < 1 + exp a := by sorry
+  have h₀ : 0 < 1 + exp a := by
+    apply add_pos
+    · norm_num
+    · apply exp_pos a
   apply log_le_log h₀
-  sorry
+  apply add_le_add_left
+  exact exp_le_exp.mpr h
 
 example : 0 ≤ a ^ 2 := by
   -- apply?
   exact sq_nonneg a
 
 example (h : a ≤ b) : c - exp b ≤ c - exp a := by
-  sorry
+  apply sub_le_sub
+  · apply le_refl
+  · apply exp_le_exp.mpr h
 
 example : 2*a*b ≤ a^2 + b^2 := by
   have h : 0 ≤ a^2 - 2*a*b + b^2
@@ -121,7 +133,18 @@ example : 2*a*b ≤ a^2 + b^2 := by
   linarith
 
 example : |a*b| ≤ (a^2 + b^2)/2 := by
-  sorry
+  have h₀:(0:ℝ)<2:=by norm_num
+  apply abs_le'.mpr
+  constructor
+  · rw[le_div_iff₀ h₀]
+    have h : 0≤a^2-2*a*b+b^2:=calc
+      a^2 - 2*a*b + b^2 = (a - b)^2 := by ring
+      _ ≥ 0 := by apply pow_two_nonneg
+    linarith
+  · rw[le_div_iff₀ h₀]
+    have h : 0≤a^2+2*a*b+b^2:=calc
+      a^2 + 2*a*b + b^2 = (a + b)^2 := by ring
+      _ ≥ 0 := by apply pow_two_nonneg
+    linarith
 
 #check abs_le'.mpr
-
