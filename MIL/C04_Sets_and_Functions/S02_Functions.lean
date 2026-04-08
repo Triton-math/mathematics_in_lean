@@ -66,34 +66,61 @@ example : f '' s \ f '' t ⊆ f '' (s \ t) := by
 example : f ⁻¹' u \ f ⁻¹' v ⊆ f ⁻¹' (u \ v) := by
   sorry
 
+-- 20260407 以上进度已完成 未存档
+
 example : f '' s ∩ v = f '' (s ∩ f ⁻¹' v) := by
-  sorry
+  ext y
+  constructor
+  · rintro ⟨⟨x, xs, rfl⟩, fxv⟩
+    use x, ⟨xs, fxv⟩
+  -- 善用rfl可以简短步骤
+  rintro ⟨x, ⟨xs, x_sfinvv⟩, rfl⟩
+  exact ⟨⟨x, xs, rfl⟩, x_sfinvv⟩
 
 example : f '' (s ∩ f ⁻¹' u) ⊆ f '' s ∩ u := by
-  sorry
+  rintro y ⟨x, ⟨xs, x_finvu⟩, rfl⟩
+  exact ⟨⟨x, xs, rfl⟩, x_finvu⟩
 
 example : s ∩ f ⁻¹' u ⊆ f ⁻¹' (f '' s ∩ u) := by
-  sorry
+  rintro x ⟨xs, x_finvu⟩
+  exact ⟨⟨x, xs, rfl⟩, x_finvu⟩
 
 example : s ∪ f ⁻¹' u ⊆ f ⁻¹' (f '' s ∪ u) := by
-  sorry
+  rintro x (xs|x_finvu)
+  · left
+    exact ⟨x, xs, rfl⟩
+  right
+  exact x_finvu
 
 variable {I : Type*} (A : I → Set α) (B : I → Set β)
 
 example : (f '' ⋃ i, A i) = ⋃ i, f '' A i := by
-  sorry
+  ext x
+  simp
+  constructor
+  · rintro ⟨x1, ⟨⟨i, x1Ai⟩, xfx1⟩⟩
+    use i, x1
+  · rintro ⟨i, ⟨x1, x1Ai, xfx1⟩⟩
+    exact ⟨x1, ⟨⟨i, x1Ai⟩, xfx1⟩⟩
 
+#print mem_sInter
+#print mem_iInter
+-- 注意一下，sInter是集合交集，而iInter是索引交集。前者的符号为 ∩₀，后者为 ∩
 example : (f '' ⋂ i, A i) ⊆ ⋂ i, f '' A i := by
-  sorry
+  simp
+  rintro i x x_cap_Ai
+  have xAi:= Set.mem_iInter.mp x_cap_Ai i
+  use x
 
 example (i : I) (injf : Injective f) : (⋂ i, f '' A i) ⊆ f '' ⋂ i, A i := by
   sorry
 
 example : (f ⁻¹' ⋃ i, B i) = ⋃ i, f ⁻¹' B i := by
-  sorry
+  simp
 
 example : (f ⁻¹' ⋂ i, B i) = ⋂ i, f ⁻¹' B i := by
-  sorry
+  ext
+  simp
 
 example : InjOn f s ↔ ∀ x₁ ∈ s, ∀ x₂ ∈ s, f x₁ = f x₂ → x₁ = x₂ :=
   Iff.refl _
@@ -123,16 +150,40 @@ example : range exp = { y | y > 0 } := by
   rw [exp_log ypos]
 
 example : InjOn sqrt { x | x ≥ 0 } := by
-  sorry
+  intro x x_nonneg y y_nonneg sxsy
+  calc
+    x = (sqrt x)^2 :=by rw[sq_sqrt x_nonneg]
+    _ = (sqrt y)^2 :=by rw[sxsy]
+    _ = y :=by rw[sq_sqrt y_nonneg]
 
 example : InjOn (fun x ↦ x ^ 2) { x : ℝ | x ≥ 0 } := by
-  sorry
+  intro x x_nonneg y y_nonneg x2y2
+  simp at *
+  have xpmy: (x-y)*(x+y)=0 :=by linarith[x2y2]
+  rcases mul_eq_zero.mp xpmy with (xy|xnegy)
+  · linarith[xy]
+  linarith[xnegy, x_nonneg, y_nonneg]
 
 example : sqrt '' { x | x ≥ 0 } = { y | y ≥ 0 } := by
-  sorry
+  ext a; constructor
+  · intro asqrtx
+    rcases asqrtx with ⟨x, x_nonneg, rfl⟩
+    exact sqrt_nonneg x
+  intro a_nonneg
+  use a^2
+  constructor
+  · apply sq_nonneg a
+  simp at a_nonneg
+  exact sqrt_sq a_nonneg
 
 example : (range fun x ↦ x ^ 2) = { y : ℝ | y ≥ 0 } := by
-  sorry
+  ext a
+  simp; constructor
+  · rintro ⟨y, rfl⟩
+    apply sq_nonneg
+  intro a_nonneg
+  use sqrt a
+  exact sq_sqrt a_nonneg
 
 end
 
@@ -156,6 +207,8 @@ def inverse (f : α → β) : β → α := fun y : β ↦
   if h : ∃ x, f x = y then Classical.choose h else default
 
 theorem inverse_spec {f : α → β} (y : β) (h : ∃ x, f x = y) : f (inverse f y) = y := by
+  -- dif_pos: Dependent IF postive, 用于改写inverse中的if
+  -- 类似地，如果我们的条件是 ¬ (∃ x, f x = y)，那么我们应该使用 dif_neg
   rw [inverse, dif_pos h]
   exact Classical.choose_spec h
 
