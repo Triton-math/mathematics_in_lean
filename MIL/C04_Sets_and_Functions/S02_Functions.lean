@@ -197,6 +197,7 @@ variable (P : α → Prop) (h : ∃ x, P x)
 #check Classical.choose h
 
 example : P (Classical.choose h) :=
+  -- spec 是 Specification（规格/规范/特征）的缩写，给出一个【所选出的值的确满足既定要求】的证明。
   Classical.choose_spec h
 
 noncomputable section
@@ -216,12 +217,24 @@ variable (f : α → β)
 
 open Function
 
+-- 可以使用 apply_fun 来对等式两边应用函数
 example : Injective f ↔ LeftInverse (inverse f) f :=
   sorry
 
-example : Surjective f ↔ RightInverse (inverse f) f :=
-  sorry
+/- term模式 写法参考
+example : Injective f ↔ LeftInverse (inverse f) f :=
+  ⟨fun h y ↦ h (inverse_spec _ ⟨y, rfl⟩), fun h x1 x2 e ↦ by rw [← h x1, ← h x2, e]⟩
+-/
 
+example : Surjective f ↔ RightInverse (inverse f) f := by
+  constructor
+  · intro fSur x
+    rcases fSur x with h
+    rw[inverse, dif_pos h]
+    exact Classical.choose_spec h
+  intro finvf_eqid x
+  use inverse f x
+  rw [finvf_eqid x]
 end
 
 section
@@ -236,10 +249,8 @@ theorem Cantor : ∀ f : α → Set α, ¬Surjective f := by
     intro h'
     have : j ∉ f j := by rwa [h] at h'
     contradiction
-  have h₂ : j ∈ S
-  sorry
-  have h₃ : j ∉ S
-  sorry
+  have h₂ : j ∈ S := h₁
+  have h₃ : j ∉ S := h ▸ h₁
   contradiction
 
 -- COMMENTS: TODO: improve this

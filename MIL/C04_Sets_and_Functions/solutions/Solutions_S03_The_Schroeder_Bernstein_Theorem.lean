@@ -15,6 +15,8 @@ variable (f : α → β) (g : β → α)
 def sbAux : ℕ → Set α
   | 0 => univ \ g '' univ
   | n + 1 => g '' (f '' sbAux n)
+-- 尽管没有显式定义，但 f 与 g 被使用到，这体现在 sbAux 的类型中
+#check sbAux
 
 def sbSet :=
   ⋃ n, sbAux f g n
@@ -86,4 +88,3 @@ theorem sb_surjective (hg : Injective g) : Surjective (sbFun f g) := by
   apply leftInverse_invFun hg
 
 end
-
